@@ -1,0 +1,2707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Monthly Habit Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #3a7bd5;
+      --accent: #00d2ff;
+      --success: #28a745;
+      --danger: #ff6b6b;
+      --muted: #6c757d;
+      --bg-start: #f5f7fa;
+      --bg-end: #c3cfe2;
+      --card-bg: #ffffff;
+      --card-radius: 12px;
+      --gap: 12px;
+      --max-width: 1200px;
+      --text: #333;
+      --shadow: 0 8px 20px rgba(0,0,0,0.08);
+      --desktop-font-size: 16px;
+      --mobile-font-size: 15px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: var(--desktop-font-size);
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .header {
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      color: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+      position: sticky;
+      top: 0;
+      z-index: 2200;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+    }
+
+    /* Month Selector Panel */
+    .month-panel {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      transition: transform 0.28s ease, box-shadow 0.2s ease;
+      will-change: transform;
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .month-panel h2 {
+      color: #3a7bd5;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+    }
+
+    .year-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 12px 15px;
+      border-radius: 10px;
+    }
+
+    .year-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #3a7bd5;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .year-btn:hover {
+      background: rgba(58, 123, 213, 0.1);
+    }
+
+    .current-year {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .months-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .month-btn {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 18px 10px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .month-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      border-color: #3a7bd5;
+    }
+
+    .month-btn.active {
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      color: white;
+      border-color: #3a7bd5;
+    }
+
+    .task-count {
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .month-btn.active .task-count {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Habit Panel */
+    .habit-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      animation: slideInRight 0.5s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .habit-panel h2 {
+      color: #3a7bd5;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+    }
+
+    .habit-input-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+    }
+
+    .habit-input-section h3 {
+      color: #495057;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    #habitInput {
+      flex: 1;
+      padding: 15px 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s;
+      outline: none;
+    }
+
+    #habitInput:focus {
+      border-color: #3a7bd5;
+      box-shadow: 0 0 0 3px rgba(58, 123, 213, 0.2);
+    }
+
+    .frequency-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .frequency-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px;
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .frequency-btn.active {
+      background: #3a7bd5;
+      color: white;
+      border-color: #3a7bd5;
+    }
+
+    .add-habit-btn {
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .add-habit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(58, 123, 213, 0.3);
+    }
+
+    .habits-list {
+      margin-top: 20px;
+    }
+
+    .habits-list h3 {
+      color: #495057;
+      margin-bottom: 15px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .habit-item {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-left: 4px solid #3a7bd5;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .habit-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .habit-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+    }
+
+    .habit-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid #6c757d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: white;
+    }
+
+    .habit-item.completed .habit-check {
+      background: #28a745;
+      border-color: #28a745;
+      color: white;
+    }
+
+    .habit-item.completed .habit-check:after {
+      content: "✓";
+      font-size: 14px;
+    }
+
+    .habit-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      flex: 1;
+    }
+
+    .habit-item.completed .habit-text {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .habit-frequency {
+      font-size: 12px;
+      background: #e9ecef;
+      color: #495057;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .habit-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .habit-action-btn {
+      background: none;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .delete-habit-btn {
+      color: #ff6b6b;
+      background: #fff5f5;
+    }
+
+    .delete-habit-btn:hover {
+      background: #ff6b6b;
+      color: white;
+      transform: scale(1.1);
+    }
+
+    /* Calendar Panel */
+    .calendar-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      animation: fadeInUp 0.5s ease-out;
+      grid-column: 1 / -1;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+
+    .calendar-header h2 {
+      color: #3a7bd5;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      background: #f8f9fa;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3a7bd5;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(58, 123, 213, 0.1);
+      transform: scale(1.1);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 25px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .day-header {
+      text-align: center;
+      font-weight: 600;
+      color: #6c757d;
+      padding: 12px 5px;
+      font-size: 14px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .calendar-day {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 12px 8px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+      border-color: #3a7bd5;
+    }
+
+    .day-number {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #495057;
+    }
+
+    .today {
+      background: rgba(58, 123, 213, 0.1);
+      border-color: #3a7bd5;
+    }
+
+    .today .day-number {
+      color: #3a7bd5;
+      font-weight: 700;
+    }
+
+    .day-habits {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 60px;
+      overflow-y: auto;
+    }
+
+    .day-habit-indicator {
+      background: white;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .day-habit-indicator.completed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .habit-status {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #6c757d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Disabled state for past dates */
+    .habit-status.disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      border-color: #ff6b6b;
+    }
+
+    /* Style for days that are past and incomplete */
+    .calendar-day.incomplete {
+      border-color: #ff6b6b;
+      background: rgba(255, 99, 71, 0.04);
+    }
+
+    .calendar-day.incomplete .day-number {
+      color: #ff6b6b;
+      font-weight: 700;
+    }
+
+    .day-habit-indicator.incomplete {
+      background: #fff5f5;
+      color: #b52b2b;
+    }
+
+    .day-habit-indicator.completed .habit-status {
+      background: #28a745;
+      border-color: #28a745;
+      color: white;
+    }
+
+    .day-habit-indicator.completed .habit-status:after {
+      content: "✓";
+      font-size: 8px;
+    }
+
+    .habit-name-short {
+      flex: 1;
+      margin-left: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .stat-1 .stat-icon { background: rgba(58, 123, 213, 0.1); color: #3a7bd5; }
+    .stat-2 .stat-icon { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+    .stat-3 .stat-icon { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+    .stat-4 .stat-icon { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #6c757d;
+      text-align: center;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: #6c757d;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 15px;
+      color: #dee2e6;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 20px;
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: #3a7bd5;
+      color: white;
+      border-color: #3a7bd5;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Animation for new habits */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .new-habit {
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    /* Mobile-only helper */
+    .mobile-only { display: none; }
+
+    /* Floating add button */
+    .add-fab {
+      background: #00d2ff;
+      color: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+      cursor: pointer;
+    }
+
+    /* Bottom bar for mobile quick actions */
+    .mobile-bottom-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 12px;
+      z-index: 2150;
+      display: flex;
+      gap: 10px;
+      background: rgba(255,255,255,0.96);
+      padding: 8px;
+      border-radius: 999px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      align-items: center;
+      display: none;
+    }
+
+    .mobile-bottom-bar .nav-btn { width: 42px; height: 42px; }
+
+    /* Habit toggle button for mobile day list */
+    .habit-toggle {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+      text-align: left;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .habit-toggle[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+    .habit-toggle .habit-status { width: 26px; height: 26px; border-radius: 8px; border-width: 3px; }
+
+    .habit-toggle .habit-status.completed { background: #28a745; border-color: #28a745; color: white; }
+
+    .habit-toggle .habit-name-short { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+      z-index: 3001;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .modal-content h3 {
+      color: #3a7bd5;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    /* Mobile drawer for month panel */
+    .month-panel-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2400;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Legend for incomplete days */
+    .mobile-legend { 
+      display:none; 
+      margin-top:8px; 
+      color:#6c757d; 
+      font-size:13px; 
+    }
+    
+    .mobile-legend .legend-dot { 
+      display:inline-block; 
+      width:10px; 
+      height:10px; 
+      border-radius:50%; 
+      background:#ff6b6b; 
+      margin-right:8px; 
+      vertical-align:middle; 
+    }
+
+    /* ==================== RESPONSIVE DESIGN ==================== */
+    
+    /* Tablet (900px and below) */
+    @media (max-width: 900px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 26px;
+      }
+
+      .month-panel,
+      .habit-panel,
+      .calendar-panel {
+        padding: 20px;
+      }
+
+      .month-btn {
+        padding: 15px 8px;
+        font-size: 14px;
+      }
+
+      .day-header {
+        padding: 10px 5px;
+        font-size: 12px;
+      }
+
+      .stats-panel {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Mobile (600px and below) */
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+        font-size: var(--mobile-font-size);
+      }
+
+      .container {
+        gap: 12px;
+      }
+
+      .header {
+        padding: 20px 16px;
+        position: relative;
+        top: 0;
+        margin-bottom: 0;
+      }
+
+      .header h1 {
+        font-size: 22px;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 14px;
+      }
+
+      .mobile-only {
+        display: flex;
+      }
+
+      /* Hide desktop month panel initially on mobile */
+      .month-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 85%;
+        max-width: 300px;
+        z-index: 2500;
+        border-radius: 0;
+        padding-top: 70px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        box-shadow: 0 0 30px rgba(0,0,0,0.2);
+      }
+
+      .month-panel.open-mobile {
+        transform: translateX(0);
+      }
+
+      .month-panel-backdrop.open {
+        display: block;
+      }
+
+      /* Habit panel adjustments */
+      .habit-panel {
+        padding: 16px;
+      }
+
+      .habit-input-section {
+        padding: 16px;
+      }
+
+      .input-group {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      #habitInput {
+        padding: 12px 16px;
+        font-size: 15px;
+      }
+
+      .frequency-selector {
+        gap: 8px;
+      }
+
+      .frequency-btn {
+        min-width: calc(33.333% - 8px);
+        font-size: 13px;
+        padding: 10px;
+      }
+
+      .add-habit-btn {
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+
+      /* Tabs on mobile */
+      .tabs {
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .tab-btn {
+        min-width: calc(50% - 8px);
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      /* Habit items on mobile */
+      .habit-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .habit-info {
+        width: 100%;
+      }
+
+      .habit-actions {
+        align-self: flex-end;
+      }
+
+      /* Calendar on mobile */
+      .calendar-panel {
+        padding: 16px;
+      }
+
+      .calendar-header {
+        margin-bottom: 20px;
+      }
+
+      .calendar-header h2 {
+        font-size: 20px;
+      }
+
+      .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+
+      /* Mobile calendar grid - horizontal scroll */
+      .calendar-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .day-header {
+        display: none;
+      }
+
+      .calendar-day {
+        min-height: auto;
+        padding: 16px;
+        margin-bottom: 8px;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .calendar-day.empty {
+        display: none;
+      }
+
+      .calendar-day .day-number {
+        min-width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .calendar-day.today .day-number {
+        background: rgba(58, 123, 213, 0.2);
+      }
+
+      .calendar-day.incomplete .day-number {
+        background: rgba(255, 107, 107, 0.1);
+      }
+
+      .day-habits {
+        flex: 1;
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      /* Habit indicators on mobile */
+      .day-habit-indicator {
+        padding: 10px;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+
+      .habit-status {
+        width: 22px;
+        height: 22px;
+        border-width: 3px;
+        flex-shrink: 0;
+      }
+
+      .habit-name-short {
+        font-size: 13px;
+        margin-left: 10px;
+      }
+
+      /* Stats panel on mobile */
+      .stats-panel {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .stat-card {
+        padding: 16px;
+      }
+
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .stat-value {
+        font-size: 22px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+      }
+
+      /* Mobile bottom bar */
+      .mobile-bottom-bar {
+        display: flex;
+        left: 16px;
+        right: 16px;
+        transform: none;
+        bottom: 16px;
+        padding: 12px;
+        justify-content: space-around;
+      }
+
+      .mobile-legend {
+        display: block;
+        margin-top: 12px;
+        font-size: 12px;
+      }
+
+      /* Adjust months grid for mobile */
+      .months-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .month-btn {
+        padding: 16px 8px;
+      }
+
+      .year-selector {
+        padding: 10px;
+      }
+
+      .year-btn {
+        width: 36px;
+        height: 36px;
+      }
+
+      .current-year {
+        font-size: 18px;
+      }
+    }
+
+    /* Extra Small Mobile (480px and below) */
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 20px;
+      }
+
+      .stats-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .frequency-btn {
+        min-width: calc(50% - 8px);
+      }
+
+      .tab-btn {
+        min-width: 100%;
+      }
+
+      .month-btn {
+        padding: 14px 6px;
+        font-size: 13px;
+      }
+
+      .calendar-day .day-number {
+        min-width: 44px;
+        height: 44px;
+        font-size: 16px;
+      }
+
+      .modal-content {
+        padding: 20px;
+      }
+    }
+
+    /* Landscape mode adjustments */
+    @media (max-height: 600px) and (orientation: landscape) {
+      .month-panel {
+        padding-top: 20px;
+      }
+
+      .months-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .calendar-day {
+        min-height: 80px;
+      }
+    }
+
+    /* Congratulation modal styles */
+    #congratsModal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      opacity: 0;
+    }
+
+    #congratsModal.open {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    #congratsModal .congrats-card {
+      /* Laminated / beveled glass look */
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        linear-gradient(135deg, rgba(58,123,213,0.04), rgba(0,210,255,0.02));
+      border-radius: 18px;
+      padding: 28px 30px;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow:
+        0 8px 20px rgba(2,6,23,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        inset 0 -8px 24px rgba(2,6,23,0.06);
+      text-align: center;
+      width: min(420px, 92%);
+      transform: translateY(-30px) scale(0.92);
+      opacity: 0;
+      transition: transform 520ms cubic-bezier(.2,.9,.3,1), opacity 300ms ease, box-shadow 300ms ease;
+      position: relative;
+      overflow: visible;
+      color: #f8fbff;
+      -webkit-backdrop-filter: blur(8px) saturate(120%);
+      backdrop-filter: blur(8px) saturate(120%);
+    }
+
+    /* Decorative thin rim to emphasize laminate */
+    #congratsModal .congrats-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(0,0,0,0.06));
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      pointer-events: none;
+    }
+
+    /* Shine sweep (uses ::after) */
+    #congratsModal .congrats-card::after {
+      content: "";
+      position: absolute;
+      top: -20%;
+      left: -60%;
+      width: 40%;
+      height: 140%;
+      background: linear-gradient(90deg, rgba(255,255,255,0.00), rgba(255,255,255,0.65), rgba(255,255,255,0.00));
+      transform: rotate(18deg) translateX(-120%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Triggered class to animate the shine */
+    #congratsModal .congrats-card.shine-animate::after {
+      animation: shineSweep 900ms cubic-bezier(.25,.9,.2,1) forwards;
+    }
+
+    #congratsModal.open .congrats-card {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      animation: popIn 560ms cubic-bezier(.2,.9,.3,1) both;
+      box-shadow: 0 18px 36px rgba(2,6,23,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    @keyframes popIn {
+      0% { transform: translateY(-30px) scale(0.92); opacity: 0; }
+      60% { transform: translateY(6px) scale(1.02); }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes shineSweep {
+      0% { transform: rotate(18deg) translateX(-120%); opacity: 0; }
+      20% { opacity: 0.6; }
+      100% { transform: rotate(18deg) translateX(140%); opacity: 0; }
+    }
+
+    .congrats-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .congrats-message {
+      font-size: 16px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .congrats-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .congrats-button {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(58,123,213,0.18);
+    }
+
+    .congrats-close {
+      background: #f8f9fa;
+      color: #333;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Confetti pieces */
+    #congratsModal .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -10%;
+      width: 10px;
+      height: 14px;
+      border-radius: 2px;
+      animation: confettiFall 1.8s linear forwards;
+      opacity: 0.95;
+      transform-origin: center;
+    }
+
+    @keyframes confettiFall {
+      to { transform: translateY(110vh) rotate(360deg); opacity: 1; }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div style="display:flex; align-items:center; justify-content:center; gap:15px; position:relative;">
+      <button id="mobileMonthsToggle" class="year-btn mobile-only" onclick="toggleMonthPanelMobile()" title="Months" aria-label="Open months panel" style="position:absolute; left:10px; top:50%; transform:translateY(-50%);">
+        <i class="fas fa-bars"></i>
+      </button>
+      <h1><i class="fas fa-calendar-check"></i> Habit Tracker</h1>
+      <button id="mobileAddBtn" class="add-fab mobile-only" onclick="openMobileAddModal()" title="Add Habit" aria-label="Add new habit" style="position:absolute; right:10px; top:50%; transform:translateY(-50%);">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+    <p>Track your daily practices and habits for the entire month</p>
+  </div>
+
+  <div class="main-content">
+    <!-- Month Selector Panel -->
+    <div class="month-panel" id="monthPanel">
+      <h2><i class="fas fa-calendar"></i> Select Month</h2>
+      
+      <div class="year-selector">
+        <button class="year-btn" onclick="changeYear(-1)" aria-label="Previous year">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="current-year" id="currentYear">2023</div>
+        <button class="year-btn" onclick="changeYear(1)" aria-label="Next year">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div class="months-grid" id="monthsGrid">
+        <!-- Months will be generated here -->
+      </div>
+    </div>
+
+    <!-- Habit Panel -->
+    <div class="habit-panel">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('habits')" id="habitsTabBtn">
+          <i class="fas fa-list-check"></i> My Habits
+        </button>
+        <button class="tab-btn" onclick="switchTab('add-habit')" id="addHabitTabBtn">
+          <i class="fas fa-plus-circle"></i> Add New Habit
+        </button>
+      </div>
+      
+      <!-- Add Habit Tab -->
+      <div id="add-habit-tab" class="tab-content active">
+        <div class="habit-input-section">
+          <h3>Add a New Monthly Habit</h3>
+          
+          <div class="input-group">
+            <input type="text" id="habitInput" placeholder="e.g., Practice guitar, Read 30 minutes, Morning meditation...">
+          </div>
+          
+          <div class="frequency-selector">
+            <button class="frequency-btn active" data-frequency="daily">
+              <i class="fas fa-calendar-day"></i> Daily
+            </button>
+            <button class="frequency-btn" data-frequency="weekdays">
+              <i class="fas fa-briefcase"></i> Weekdays
+            </button>
+            <button class="frequency-btn" data-frequency="weekends">
+              <i class="fas fa-umbrella-beach"></i> Weekends
+            </button>
+          </div>
+          
+          <button class="add-habit-btn" onclick="addHabit()" id="addHabitBtn">
+            <i class="fas fa-plus"></i> Add Habit for Entire Month
+          </button>
+        </div>
+        
+        <div class="habits-list">
+          <h3><i class="fas fa-list-check"></i> Current Month's Habits</h3>
+          <div id="habitsList">
+            <!-- Habits will be loaded here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- My Habits Tab -->
+      <div id="habits-tab" class="tab-content">
+        <div class="habits-list">
+          <h3><i class="fas fa-trophy"></i> Habit Progress</h3>
+          <div id="allHabitsList">
+            <!-- All habits will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Panel -->
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <h2><i class="fas fa-calendar-day"></i> <span id="currentMonthYear">January 2023</span></h2>
+        <div>
+          <button class="nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="nav-btn" onclick="changeMonth(1)" style="margin-left: 10px;" aria-label="Next month">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="calendar-grid" id="calendarGrid">
+        <!-- Calendar will be generated here -->
+      </div>
+      
+      <div class="stats-panel">
+        <div class="stat-card stat-1">
+          <div class="stat-icon"><i class="fas fa-list-check"></i></div>
+          <div class="stat-value" id="totalHabits">0</div>
+          <div class="stat-label">Active Habits</div>
+        </div>
+        <div class="stat-card stat-2">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-value" id="completionRate">0%</div>
+          <div class="stat-label">Completion Rate</div>
+        </div>
+        <div class="stat-card stat-3">
+          <div class="stat-icon"><i class="fas fa-fire"></i></div>
+          <div class="stat-value" id="currentStreak">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-card stat-4">
+          <div class="stat-icon"><i class="fas fa-star"></i></div>
+          <div class="stat-value" id="bestDay">0</div>
+          <div class="stat-label">Best Day (tasks)</div>
+        </div>
+      </div>
+
+      <!-- Mobile legend and bottom bar -->
+      <div class="mobile-legend">
+        <span class="legend-dot"></span>Uncompleted past days
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Month panel backdrop -->
+<div class="month-panel-backdrop" id="monthPanelBackdrop" onclick="toggleMonthPanelMobile()"></div>
+
+<!-- Mobile bottom navigation -->
+<div class="mobile-bottom-bar" role="toolbar">
+  <button class="nav-btn" onclick="goToToday()" title="Go to Today" aria-label="Go to today">
+    <i class="fas fa-crosshairs"></i>
+  </button>
+  <button class="add-fab" onclick="openMobileAddModal()" title="Add Habit" aria-label="Add new habit">
+    <i class="fas fa-plus"></i>
+  </button>
+  <button class="nav-btn" onclick="toggleMonthPanelMobile()" title="Months" aria-label="Open months panel">
+    <i class="fas fa-calendar"></i>
+  </button>
+</div>
+
+<!-- Mobile Add Habit Modal -->
+<div id="mobileAddHabitModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeMobileAddModal()"></div>
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="mobileAddTitle">
+    <h3 id="mobileAddTitle">Add Habit</h3>
+    <input type="text" id="mobileHabitInput" placeholder="e.g., Read 30 minutes" autocomplete="off" />
+    <div class="frequency-selector" style="margin-bottom: 15px;">
+      <button class="frequency-btn active" data-frequency="daily" onclick="selectModalFrequency(this)">
+        <i class="fas fa-calendar-day"></i> Daily
+      </button>
+      <button class="frequency-btn" data-frequency="weekdays" onclick="selectModalFrequency(this)">
+        <i class="fas fa-briefcase"></i> Weekdays
+      </button>
+      <button class="frequency-btn" data-frequency="weekends" onclick="selectModalFrequency(this)">
+        <i class="fas fa-umbrella-beach"></i> Weekends
+      </button>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:5px;">
+      <button class="add-habit-btn" onclick="addHabitFromModal()" style="flex:1; padding: 12px;">
+        Add Habit
+      </button>
+      <button class="habit-action-btn" onclick="closeMobileAddModal()" style="background:#f8f9fa; color:#495057;">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Congratulation Modal -->
+<div id="congratsModal" aria-hidden="true">
+  <div class="congrats-card" role="dialog" aria-modal="true" aria-labelledby="congratsTitle">
+    <div class="confetti" aria-hidden="true"></div>
+    <div class="congrats-title" id="congratsTitle">🎉 <span>Congratulations</span></div>
+    <div class="congrats-message">Nice! You completed the habit.</div>
+    <div class="congrats-actions">
+      <button class="congrats-button" onclick="closeCongratsModal()">Awesome</button>
+      <button class="congrats-close" onclick="closeCongratsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize variables
+  let currentDate = new Date();
+  let currentYear = currentDate.getFullYear();
+  let currentMonth = currentDate.getMonth();
+  let selectedFrequency = "daily";
+  let isMobileView = window.innerWidth <= 600;
+  
+  // Month names
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  
+  // Day names for calendar header
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  
+  // Initialize habits storage
+  let habits = JSON.parse(localStorage.getItem("monthlyHabits")) || {};
+  
+  // Initialize daily completions storage
+  let dailyCompletions = JSON.parse(localStorage.getItem("dailyHabitCompletions")) || {};
+
+  // Initialize the app
+  document.addEventListener("DOMContentLoaded", function() {
+    updateYearDisplay();
+    renderMonthsGrid();
+    renderCalendar();
+    loadHabitsForMonth();
+    updateStats();
+    
+    // Set up frequency selector
+    document.querySelectorAll('.frequency-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.frequency-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedFrequency = this.getAttribute('data-frequency');
+      });
+    });
+    
+    // Set up enter key for habit input
+    document.getElementById('habitInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addHabit();
+      }
+    });
+    
+    // Set up enter key for mobile habit input
+    document.getElementById('mobileHabitInput')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addHabitFromModal();
+      }
+    });
+    
+    // Close month panel when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+      const monthPanel = document.getElementById('monthPanel');
+      const backdrop = document.getElementById('monthPanelBackdrop');
+      const toggleBtn = document.getElementById('mobileMonthsToggle');
+      
+      if (isMobileView && monthPanel.classList.contains('open-mobile') && 
+          !monthPanel.contains(e.target) && e.target !== toggleBtn) {
+        toggleMonthPanelMobile();
+      }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', handleResize);
+    
+    // Initialize mobile state
+    checkMobileView();
+  });
+
+  // Handle window resize
+  function handleResize() {
+    const wasMobile = isMobileView;
+    isMobileView = window.innerWidth <= 600;
+    
+    if (wasMobile !== isMobileView) {
+      // Re-render calendar for different view
+      renderCalendar();
+    }
+  }
+
+  // Check if we're in mobile view
+  function checkMobileView() {
+    isMobileView = window.innerWidth <= 600;
+  }
+
+  // Switch between tabs
+  function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    if (tabName === 'habits') {
+      document.getElementById('habitsTabBtn').classList.add('active');
+    } else {
+      document.getElementById('addHabitTabBtn').classList.add('active');
+    }
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    if (tabName === 'habits') {
+      document.getElementById('habits-tab').classList.add('active');
+      loadAllHabits();
+    } else {
+      document.getElementById('add-habit-tab').classList.add('active');
+      loadHabitsForMonth();
+    }
+  }
+
+  // Update year display
+  function updateYearDisplay() {
+    document.getElementById("currentYear").textContent = currentYear;
+  }
+
+  // Change year
+  function changeYear(delta) {
+    currentYear += delta;
+    updateYearDisplay();
+    renderMonthsGrid();
+    loadHabitsForMonth();
+    renderCalendar();
+    updateStats();
+  }
+
+  // Change month
+  function changeMonth(delta) {
+    currentMonth += delta;
+    
+    // Handle year rollover
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+      updateYearDisplay();
+    } else if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+      updateYearDisplay();
+    }
+    
+    renderCalendar();
+    renderMonthsGrid();
+    loadHabitsForMonth();
+    updateStats();
+  }
+
+  // Render months grid
+  function renderMonthsGrid() {
+    const monthsGrid = document.getElementById("monthsGrid");
+    monthsGrid.innerHTML = "";
+    
+    for (let i = 0; i < 12; i++) {
+      const monthBtn = document.createElement("button");
+      monthBtn.className = "month-btn";
+      
+      // Check if this month is selected
+      if (i === currentMonth && currentYear === currentYear) {
+        monthBtn.classList.add("active");
+      }
+      
+      // Count habits for this month
+      const monthKey = `${currentYear}-${String(i+1).padStart(2, '0')}`;
+      const monthHabits = getHabitsForMonth(currentYear, i);
+      const habitCount = monthHabits.length;
+      
+      monthBtn.innerHTML = `
+        <span>${monthNames[i].substring(0, 3)}</span>
+        <span class="task-count">${habitCount} habit${habitCount !== 1 ? 's' : ''}</span>
+      `;
+      
+      monthBtn.onclick = () => {
+        selectMonth(i);
+        if (isMobileView) {
+          toggleMonthPanelMobile();
+        }
+      };
+      monthsGrid.appendChild(monthBtn);
+    }
+  }
+
+  // Select a month
+  function selectMonth(monthIndex) {
+    currentMonth = monthIndex;
+    
+    renderCalendar();
+    renderMonthsGrid();
+    loadHabitsForMonth();
+    updateStats();
+  }
+
+  // Add a new habit
+  function addHabit() {
+    const habitInput = document.getElementById("habitInput");
+    const habitText = habitInput.value.trim();
+    
+    if (habitText === "") {
+      alert("Please enter a habit!");
+      return;
+    }
+    
+    // Create month key
+    const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+    
+    // Initialize habits for this month if needed
+    if (!habits[monthKey]) {
+      habits[monthKey] = [];
+    }
+    
+    // Check if habit already exists for this month
+    const existingHabit = habits[monthKey].find(h => h.text.toLowerCase() === habitText.toLowerCase());
+    if (existingHabit) {
+      alert("This habit already exists for this month!");
+      return;
+    }
+    
+    // Add new habit
+    const newHabit = {
+      id: Date.now(),
+      text: habitText,
+      frequency: selectedFrequency,
+      createdAt: new Date().toISOString(),
+      completedDays: [] // Array to store which days this habit was completed
+    };
+    
+    habits[monthKey].push(newHabit);
+    
+    // Save to localStorage
+    localStorage.setItem("monthlyHabits", JSON.stringify(habits));
+    
+    // Clear input
+    habitInput.value = "";
+    
+    // Update UI
+    loadHabitsForMonth();
+    renderCalendar();
+    updateStats();
+    renderMonthsGrid();
+    
+    // Switch to habits tab
+    switchTab('habits');
+    
+    // Show success message
+    showNotification(`"${habitText}" added as a ${selectedFrequency} habit for ${monthNames[currentMonth]}`);
+  }
+
+  // Get habits for a specific month
+  function getHabitsForMonth(year, month) {
+    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+    return habits[monthKey] || [];
+  }
+
+  // Load habits for current month
+  function loadHabitsForMonth() {
+    const habitsList = document.getElementById("habitsList");
+    const monthHabits = getHabitsForMonth(currentYear, currentMonth);
+    
+    if (monthHabits.length === 0) {
+      habitsList.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No habits for ${monthNames[currentMonth]}. Add your first habit above!</p>
+        </div>
+      `;
+    } else {
+      habitsList.innerHTML = "";
+      
+      monthHabits.forEach((habit, index) => {
+        const habitItem = document.createElement("div");
+        habitItem.className = "habit-item";
+        
+        // Calculate completion for this habit
+        const totalDays = getDaysForFrequency(habit.frequency, currentYear, currentMonth);
+        const completedDays = getCompletedDaysForHabit(habit.id, currentYear, currentMonth);
+        const completionPercent = totalDays > 0 ? Math.round((completedDays.length / totalDays) * 100) : 0;
+        
+        habitItem.innerHTML = `
+          <div class="habit-info">
+            <div class="habit-check" onclick="toggleHabitCompletion(${habit.id})" aria-label="Toggle completion for ${habit.text}"></div>
+            <div class="habit-text">${habit.text}</div>
+            <div class="habit-frequency">${habit.frequency}</div>
+          </div>
+          <div class="habit-actions">
+            <button class="habit-action-btn delete-habit-btn" onclick="deleteHabit(${habit.id})" aria-label="Delete ${habit.text}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        
+        // Add completed class if habit is completed today
+        const today = new Date();
+        const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        if (dailyCompletions[dayKey] && dailyCompletions[dayKey].includes(habit.id)) {
+          habitItem.classList.add('completed');
+        }
+        
+        habitsList.appendChild(habitItem);
+      });
+    }
+  }
+
+  // Load all habits (for the habits tab)
+  function loadAllHabits() {
+    const allHabitsList = document.getElementById("allHabitsList");
+    let allHabits = [];
+    
+    // Get all habits from all months
+    for (const monthKey in habits) {
+      habits[monthKey].forEach(habit => {
+        allHabits.push({
+          ...habit,
+          monthKey: monthKey
+        });
+      });
+    }
+    
+    if (allHabits.length === 0) {
+      allHabitsList.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No habits found. Add your first habit to start tracking!</p>
+        </div>
+      `;
+    } else {
+      allHabitsList.innerHTML = "";
+      
+      allHabits.forEach(habit => {
+        const [year, month] = habit.monthKey.split('-');
+        const monthName = monthNames[parseInt(month) - 1];
+        
+        const habitItem = document.createElement("div");
+        habitItem.className = "habit-item";
+        
+        // Calculate completion for this habit
+        const totalDays = getDaysForFrequency(habit.frequency, parseInt(year), parseInt(month) - 1);
+        const completedDays = getCompletedDaysForHabit(habit.id, parseInt(year), parseInt(month) - 1);
+        const completionPercent = totalDays > 0 ? Math.round((completedDays.length / totalDays) * 100) : 0;
+        
+        habitItem.innerHTML = `
+          <div class="habit-info">
+            <div class="habit-check" onclick="toggleHabitCompletionAll(${habit.id}, '${habit.monthKey}')" aria-label="Toggle completion for ${habit.text}"></div>
+            <div class="habit-text">${habit.text}</div>
+            <div class="habit-frequency">${habit.frequency}</div>
+          </div>
+          <div style="margin-left: 10px; font-size: 14px; color: #6c757d;">
+            ${monthName} ${year} (${completionPercent}%)
+          </div>
+        `;
+        
+        // Check if this habit is for current month and completed today
+        if (parseInt(year) === currentYear && (parseInt(month) - 1) === currentMonth) {
+          const today = new Date();
+          const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          if (dailyCompletions[dayKey] && dailyCompletions[dayKey].includes(habit.id)) {
+            habitItem.classList.add('completed');
+          }
+        }
+        
+        allHabitsList.appendChild(habitItem);
+      });
+    }
+  }
+
+  // Get total days for a frequency in a month
+  function getDaysForFrequency(frequency, year, month) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let days = 0;
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      if (frequency === "daily") {
+        days++;
+      } else if (frequency === "weekdays" && dayOfWeek >= 1 && dayOfWeek <= 5) {
+        days++;
+      } else if (frequency === "weekends" && (dayOfWeek === 0 || dayOfWeek === 6)) {
+        days++;
+      }
+    }
+    
+    return days;
+  }
+
+  // Get completed days for a specific habit
+  function getCompletedDaysForHabit(habitId, year, month) {
+    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const dayKeyPrefix = `${monthKey}-`;
+    const completedDays = [];
+    
+    // Check daily completions
+    for (const key in dailyCompletions) {
+      if (key.startsWith(dayKeyPrefix)) {
+        const dayHabits = dailyCompletions[key];
+        if (dayHabits.includes(habitId)) {
+          const day = parseInt(key.split('-')[2]);
+          completedDays.push(day);
+        }
+      }
+    }
+    
+    return completedDays;
+  }
+
+  // Toggle habit completion for a specific day
+  function toggleHabitDayCompletion(habitId, year, month, day) {
+    // Prevent modifying past (ended) dates
+    const targetDateOnly = new Date(year, month, day);
+    const now = new Date();
+    const todayDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (targetDateOnly < todayDateOnly) {
+      showNotification("Cannot modify past dates");
+      return;
+    }
+
+    const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    
+    // Initialize day if needed
+    if (!dailyCompletions[dayKey]) {
+      dailyCompletions[dayKey] = [];
+    }
+    
+    // Check if habit is already completed for this day
+    const habitIndex = dailyCompletions[dayKey].indexOf(habitId);
+    
+    if (habitIndex > -1) {
+      // Remove from completions
+      dailyCompletions[dayKey].splice(habitIndex, 1);
+    } else {
+      // Add to completions
+      dailyCompletions[dayKey].push(habitId);
+      // Show congrats modal for completion
+      const completedHabit = getHabitById(habitId);
+      showCongratsModal(completedHabit ? completedHabit.text : "Habit");
+    }
+    
+    // Save to localStorage
+    localStorage.setItem("dailyHabitCompletions", JSON.stringify(dailyCompletions));
+    
+    // Update UI
+    renderCalendar();
+    updateStats();
+    loadHabitsForMonth();
+    loadAllHabits();
+  }
+
+  // Toggle habit completion (from habits list)
+  function toggleHabitCompletion(habitId) {
+    const today = new Date();
+    const year = currentYear;
+    const month = currentMonth;
+    const day = today.getDate();
+    
+    // Only toggle if today is in the current month
+    if (year === currentYear && month === currentMonth) {
+      toggleHabitDayCompletion(habitId, year, month, day);
+    }
+  }
+
+  // Toggle habit completion from all habits list
+  function toggleHabitCompletionAll(habitId, monthKey) {
+    const [year, month] = monthKey.split('-');
+    const today = new Date();
+    const currentDay = today.getDate();
+    
+    // Check if this month is the current month
+    if (parseInt(year) === currentYear && (parseInt(month) - 1) === currentMonth) {
+      toggleHabitDayCompletion(habitId, currentYear, currentMonth, currentDay);
+    }
+  }
+
+  // Delete a habit
+  function deleteHabit(habitId) {
+    if (!confirm("Are you sure you want to delete this habit? This will remove it from all days in this month.")) {
+      return;
+    }
+    
+    const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+    
+    // Find and remove the habit
+    if (habits[monthKey]) {
+      habits[monthKey] = habits[monthKey].filter(habit => habit.id !== habitId);
+      
+      // If no habits left, remove the month entry
+      if (habits[monthKey].length === 0) {
+        delete habits[monthKey];
+      }
+      
+      // Save to localStorage
+      localStorage.setItem("monthlyHabits", JSON.stringify(habits));
+      
+      // Remove habit from all daily completions
+      for (const dayKey in dailyCompletions) {
+        if (dayKey.startsWith(monthKey)) {
+          dailyCompletions[dayKey] = dailyCompletions[dayKey].filter(id => id !== habitId);
+        }
+      }
+      
+      localStorage.setItem("dailyHabitCompletions", JSON.stringify(dailyCompletions));
+      
+      // Update UI
+      loadHabitsForMonth();
+      renderCalendar();
+      updateStats();
+      renderMonthsGrid();
+      
+      showNotification("Habit deleted successfully");
+    }
+  }
+
+  // Render calendar
+  function renderCalendar() {
+    const calendarGrid = document.getElementById("calendarGrid");
+    const currentMonthYear = document.getElementById("currentMonthYear");
+    
+    // Update month/year title
+    currentMonthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    
+    // Clear calendar
+    calendarGrid.innerHTML = "";
+    
+    if (isMobileView) {
+      // Mobile view: vertical list of days
+      renderCalendarMobile();
+    } else {
+      // Desktop view: grid calendar
+      renderCalendarDesktop();
+    }
+  }
+
+  // Render desktop calendar (grid)
+  function renderCalendarDesktop() {
+    const calendarGrid = document.getElementById("calendarGrid");
+    
+    // Add day headers
+    for (let i = 0; i < 7; i++) {
+      const dayHeader = document.createElement("div");
+      dayHeader.className = "day-header";
+      dayHeader.textContent = dayNames[i];
+      calendarGrid.appendChild(dayHeader);
+    }
+    
+    // Get first day of month and total days
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    // Add empty cells for days before first day of month
+    for (let i = 0; i < firstDay; i++) {
+      const emptyCell = document.createElement("div");
+      emptyCell.className = "calendar-day empty";
+      calendarGrid.appendChild(emptyCell);
+    }
+    
+    // Add day cells
+    const today = new Date();
+    const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isCurrentMonthYear = today.getFullYear() === currentYear && today.getMonth() === currentMonth;
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayCell = document.createElement("div");
+      dayCell.className = "calendar-day";
+      
+      // Check if this is today
+      if (isCurrentMonthYear && day === today.getDate()) {
+        dayCell.classList.add("today");
+      }
+      
+      // Day number
+      const dayNumber = document.createElement("div");
+      dayNumber.className = "day-number";
+      dayNumber.textContent = day;
+      dayCell.appendChild(dayNumber);
+      
+      // Get habits for this month
+      const monthHabits = getHabitsForMonth(currentYear, currentMonth);
+      
+      // Get completed habits for this day
+      const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const completedHabitIds = dailyCompletions[dayKey] || [];
+      
+      // Add habit indicators for this day
+      if (monthHabits.length > 0) {
+        const dayHabits = document.createElement("div");
+        dayHabits.className = "day-habits";
+        
+        // Filter habits that apply to this day based on frequency
+        const date = new Date(currentYear, currentMonth, day);
+        const dayOfWeek = date.getDay();
+        
+        const applicableHabits = monthHabits.filter(habit => {
+          if (habit.frequency === "daily") return true;
+          if (habit.frequency === "weekdays" && dayOfWeek >= 1 && dayOfWeek <= 5) return true;
+          if (habit.frequency === "weekends" && (dayOfWeek === 0 || dayOfWeek === 6)) return true;
+          return false;
+        });
+        
+        // Show up to 3 habits (with more indicator if needed)
+        const habitsToShow = applicableHabits.slice(0, 3);
+        
+        // Determine if this day is in the past (date-only) and whether it's incomplete
+        const targetDateObj = new Date(currentYear, currentMonth, day);
+        const isPast = targetDateObj < todayDateOnly;
+        const isDayIncomplete = applicableHabits.length > 0 && applicableHabits.every(h => !completedHabitIds.includes(h.id));
+
+        if (isPast && isDayIncomplete) {
+          dayCell.classList.add('incomplete');
+        }
+        
+        habitsToShow.forEach(habit => {
+          const isCompleted = completedHabitIds.includes(habit.id);
+          const habitIndicator = document.createElement("div");
+          habitIndicator.className = `day-habit-indicator ${isCompleted ? 'completed' : ''} ${(isPast && !isCompleted) ? 'incomplete' : ''}`;
+
+          // Create status element (disabled if past)
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "habit-status";
+          if (isPast) {
+            statusDiv.classList.add("disabled");
+            statusDiv.setAttribute("title", "Cannot modify past dates");
+          } else {
+            statusDiv.addEventListener('click', function(e) {
+              e.stopPropagation();
+              toggleHabitDayCompletion(habit.id, currentYear, currentMonth, day);
+            });
+            statusDiv.style.cursor = "pointer";
+          }
+
+          const nameDiv = document.createElement("div");
+          nameDiv.className = "habit-name-short";
+          nameDiv.textContent = `${habit.text.substring(0, 10)}${habit.text.length > 10 ? '...' : ''}`;
+
+          habitIndicator.appendChild(statusDiv);
+          habitIndicator.appendChild(nameDiv);
+          dayHabits.appendChild(habitIndicator);
+        });
+
+        // Show "more" indicator if there are more than 3 applicable habits
+        if (applicableHabits.length > 3) {
+          const moreIndicator = document.createElement("div");
+          moreIndicator.className = "day-habit-indicator";
+          moreIndicator.innerHTML = `<div class="habit-name-short">+${applicableHabits.length - 3} more</div>`;
+          dayHabits.appendChild(moreIndicator);
+        }
+
+        dayCell.appendChild(dayHabits);
+      }
+      
+      calendarGrid.appendChild(dayCell);
+    }
+  }
+
+  // Render mobile calendar (list)
+  function renderCalendarMobile() {
+    const calendarGrid = document.getElementById("calendarGrid");
+    
+    // Get total days in month
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date();
+    const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isCurrentMonthYear = today.getFullYear() === currentYear && today.getMonth() === currentMonth;
+    
+    // Get habits for this month
+    const monthHabits = getHabitsForMonth(currentYear, currentMonth);
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayCell = document.createElement("div");
+      dayCell.className = "calendar-day";
+      
+      // Check if this is today
+      if (isCurrentMonthYear && day === today.getDate()) {
+        dayCell.classList.add("today");
+      }
+      
+      // Day number
+      const dayNumber = document.createElement("div");
+      dayNumber.className = "day-number";
+      dayNumber.textContent = day;
+      
+      // Add day name for mobile
+      const date = new Date(currentYear, currentMonth, day);
+      const dayName = document.createElement("div");
+      dayName.style.cssText = "font-size:11px; color:#6c757d; margin-top:2px;";
+      dayName.textContent = dayNames[date.getDay()];
+      dayNumber.appendChild(dayName);
+      
+      dayCell.appendChild(dayNumber);
+      
+      // Get completed habits for this day
+      const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const completedHabitIds = dailyCompletions[dayKey] || [];
+      
+      // Add habit indicators for this day
+      if (monthHabits.length > 0) {
+        const dayHabits = document.createElement("div");
+        dayHabits.className = "day-habits";
+        
+        // Filter habits that apply to this day based on frequency
+        const dayOfWeek = date.getDay();
+        
+        const applicableHabits = monthHabits.filter(habit => {
+          if (habit.frequency === "daily") return true;
+          if (habit.frequency === "weekdays" && dayOfWeek >= 1 && dayOfWeek <= 5) return true;
+          if (habit.frequency === "weekends" && (dayOfWeek === 0 || dayOfWeek === 6)) return true;
+          return false;
+        });
+        
+        // Determine if this day is in the past (date-only) and whether it's incomplete
+        const targetDateObj = new Date(currentYear, currentMonth, day);
+        const isPast = targetDateObj < todayDateOnly;
+        const isDayIncomplete = applicableHabits.length > 0 && applicableHabits.every(h => !completedHabitIds.includes(h.id));
+
+        if (isPast && isDayIncomplete) {
+          dayCell.classList.add('incomplete');
+        }
+        
+        applicableHabits.forEach(habit => {
+          const isCompleted = completedHabitIds.includes(habit.id);
+          const habitIndicator = document.createElement("div");
+          habitIndicator.className = `day-habit-indicator ${isCompleted ? 'completed' : ''} ${(isPast && !isCompleted) ? 'incomplete' : ''}`;
+
+          // Create status element (disabled if past)
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "habit-status";
+          if (isPast) {
+            statusDiv.classList.add("disabled");
+            statusDiv.setAttribute("title", "Cannot modify past dates");
+          } else {
+            statusDiv.addEventListener('click', function(e) {
+              e.stopPropagation();
+              toggleHabitDayCompletion(habit.id, currentYear, currentMonth, day);
+            });
+            statusDiv.style.cursor = "pointer";
+          }
+
+          const nameDiv = document.createElement("div");
+          nameDiv.className = "habit-name-short";
+          nameDiv.textContent = habit.text;
+
+          habitIndicator.appendChild(statusDiv);
+          habitIndicator.appendChild(nameDiv);
+          dayHabits.appendChild(habitIndicator);
+        });
+        
+        // If no habits for this day
+        if (applicableHabits.length === 0) {
+          const noHabitsIndicator = document.createElement("div");
+          noHabitsIndicator.className = "day-habit-indicator";
+          noHabitsIndicator.innerHTML = `<div class="habit-name-short" style="text-align:center; color:#6c757d;">No habits scheduled</div>`;
+          dayHabits.appendChild(noHabitsIndicator);
+        }
+
+        dayCell.appendChild(dayHabits);
+      } else {
+        // No habits in month
+        const dayHabits = document.createElement("div");
+        dayHabits.className = "day-habits";
+        const noHabitsIndicator = document.createElement("div");
+        noHabitsIndicator.className = "day-habit-indicator";
+        noHabitsIndicator.innerHTML = `<div class="habit-name-short" style="text-align:center; color:#6c757d;">No habits added</div>`;
+        dayHabits.appendChild(noHabitsIndicator);
+        dayCell.appendChild(dayHabits);
+      }
+      
+      calendarGrid.appendChild(dayCell);
+    }
+  }
+
+  // Update statistics
+  function updateStats() {
+    // Get habits for current month
+    const monthHabits = getHabitsForMonth(currentYear, currentMonth);
+    const totalHabits = monthHabits.length;
+    
+    // Calculate completion rate
+    let totalPossibleCompletions = 0;
+    let totalActualCompletions = 0;
+    
+    monthHabits.forEach(habit => {
+      const totalDays = getDaysForFrequency(habit.frequency, currentYear, currentMonth);
+      const completedDays = getCompletedDaysForHabit(habit.id, currentYear, currentMonth);
+      
+      totalPossibleCompletions += totalDays;
+      totalActualCompletions += completedDays.length;
+    });
+    
+    const completionRate = totalPossibleCompletions > 0 ? 
+      Math.round((totalActualCompletions / totalPossibleCompletions) * 100) : 0;
+    
+    // Calculate current streak
+    const today = new Date();
+    let currentStreak = 0;
+    
+    if (today.getFullYear() === currentYear && today.getMonth() === currentMonth) {
+      const todayDay = today.getDate();
+      let day = todayDay;
+      
+      while (day > 0) {
+        const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayCompletions = dailyCompletions[dayKey] || [];
+        
+        // Check if there are any habits for this day
+        const date = new Date(currentYear, currentMonth, day);
+        const dayOfWeek = date.getDay();
+        
+        const applicableHabits = monthHabits.filter(habit => {
+          if (habit.frequency === "daily") return true;
+          if (habit.frequency === "weekdays" && dayOfWeek >= 1 && dayOfWeek <= 5) return true;
+          if (habit.frequency === "weekends" && (dayOfWeek === 0 || dayOfWeek === 6)) return true;
+          return false;
+        });
+        
+        // If there are applicable habits, check if at least one was completed
+        if (applicableHabits.length > 0) {
+          const completedToday = applicableHabits.some(habit => dayCompletions.includes(habit.id));
+          
+          if (completedToday) {
+            currentStreak++;
+            day--;
+          } else {
+            break;
+          }
+        } else {
+          // No applicable habits for this day, streak continues
+          day--;
+        }
+      }
+    }
+    
+    // Find best day (day with most completions)
+    let bestDay = 0;
+    let bestDayCount = 0;
+    
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayCompletions = dailyCompletions[dayKey] || [];
+      
+      if (dayCompletions.length > bestDayCount) {
+        bestDayCount = dayCompletions.length;
+        bestDay = day;
+      }
+    }
+    
+    // Update UI
+    document.getElementById("totalHabits").textContent = totalHabits;
+    document.getElementById("completionRate").textContent = `${completionRate}%`;
+    document.getElementById("currentStreak").textContent = currentStreak;
+    document.getElementById("bestDay").textContent = bestDayCount;
+  }
+
+  // Mobile: Toggle month panel visibility on small screens (slide-in drawer)
+  function toggleMonthPanelMobile() {
+    const panel = document.getElementById('monthPanel');
+    const backdrop = document.getElementById('monthPanelBackdrop');
+    const toggleBtn = document.getElementById('mobileMonthsToggle');
+    const isOpen = panel.classList.contains('open-mobile');
+    
+    if (isOpen) {
+      panel.classList.remove('open-mobile');
+      backdrop.classList.remove('open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = 'auto';
+    } else {
+      panel.classList.add('open-mobile');
+      backdrop.classList.add('open');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      // Focus the first month button for accessibility
+      setTimeout(() => {
+        const firstMonthBtn = panel.querySelector('.month-btn');
+        if (firstMonthBtn) firstMonthBtn.focus();
+      }, 300);
+    }
+  }
+
+  // Mobile modal control
+  function openMobileAddModal() {
+    const modal = document.getElementById('mobileAddHabitModal');
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    
+    // Reset frequency to daily
+    document.querySelectorAll('#mobileAddHabitModal .frequency-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-frequency') === 'daily') {
+        btn.classList.add('active');
+      }
+    });
+    
+    // Clear input
+    document.getElementById('mobileHabitInput').value = '';
+    
+    // Focus input
+    setTimeout(() => {
+      document.getElementById('mobileHabitInput').focus();
+    }, 100);
+    
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileAddModal() {
+    const modal = document.getElementById('mobileAddHabitModal');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = 'auto';
+  }
+
+  function selectModalFrequency(btn) {
+    document.querySelectorAll('#mobileAddHabitModal .frequency-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function addHabitFromModal() {
+    const val = document.getElementById('mobileHabitInput').value.trim();
+    if (!val) { 
+      alert('Please enter a habit'); 
+      return; 
+    }
+    
+    // Set frequency
+    const freqBtn = document.querySelector('#mobileAddHabitModal .frequency-btn.active');
+    if (freqBtn) {
+      const freq = freqBtn.getAttribute('data-frequency');
+      selectedFrequency = freq;
+      // Update main frequency buttons
+      document.querySelectorAll('.frequency-btn').forEach(b => {
+        b.classList.remove('active');
+        if (b.getAttribute('data-frequency') === freq) {
+          b.classList.add('active');
+        }
+      });
+    }
+    
+    // Set value in main input and add habit
+    document.getElementById('habitInput').value = val;
+    addHabit();
+    
+    closeMobileAddModal();
+  }
+
+  // Quick go to today
+  function goToToday() {
+    const t = new Date();
+    currentYear = t.getFullYear();
+    currentMonth = t.getMonth();
+    updateYearDisplay();
+    renderMonthsGrid();
+    renderCalendar();
+    loadHabitsForMonth();
+    updateStats();
+    
+    // Close month panel if open on mobile
+    if (isMobileView) {
+      const panel = document.getElementById('monthPanel');
+      if (panel.classList.contains('open-mobile')) {
+        toggleMonthPanelMobile();
+      }
+    }
+    
+    showNotification("Returned to current month");
+  }
+
+  // Show notification
+  function showNotification(message) {
+    // Remove existing notification if any
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement("div");
+    notification.className = "notification";
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 3000;
+      transform: translateX(150%);
+      transition: transform 0.4s ease-out;
+      max-width: 300px;
+    `;
+    
+    notification.innerHTML = `
+      <i class="fas fa-check-circle"></i>
+      <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+      notification.style.transform = "translateX(0)";
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.transform = "translateX(150%)";
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 400);
+    }, 3000);
+  }
+
+  // Get habit by id (search across months)
+  function getHabitById(habitId) {
+    for (const monthKey in habits) {
+      const found = habits[monthKey].find(h => h.id === habitId);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  // Congratulation modal logic
+  function showCongratsModal(habitText) {
+    const modal = document.getElementById('congratsModal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'false');
+    const msg = modal.querySelector('.congrats-message');
+    msg.textContent = `Nice! You completed "${habitText}" 🎉`;
+    modal.classList.add('open');
+    // Laminated card shine: trigger sweep animation
+    const card = modal.querySelector('.congrats-card');
+    if (card) {
+      card.classList.remove('shine-animate');
+      // Force reflow to restart animation
+      void card.offsetWidth;
+      card.classList.add('shine-animate');
+      setTimeout(() => card.classList.remove('shine-animate'), 1400);
+    }
+    createConfetti();
+    clearTimeout(modal.dismissTimer);
+    modal.dismissTimer = setTimeout(closeCongratsModal, 4000);
+  }
+
+  function closeCongratsModal() {
+    const modal = document.getElementById('congratsModal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    modal.classList.remove('open');
+    const confetti = modal.querySelector('.confetti');
+    if (confetti) confetti.innerHTML = '';
+  }
+
+  function createConfetti() {
+    const confetti = document.querySelector('#congratsModal .confetti');
+    if (!confetti) return;
+    confetti.innerHTML = '';
+    const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#9B5DE5'];
+    for (let i = 0; i < 18; i++) {
+      const el = document.createElement('span');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + '%';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.animationDelay = (Math.random() * 0.6) + 's';
+      confetti.appendChild(el);
+    }
+    setTimeout(() => { confetti.innerHTML = ''; }, 3800);
+  }
+
+  // Close modal when clicking outside or pressing the close button
+  document.addEventListener('click', function(e) {
+    const modal = document.getElementById('congratsModal');
+    if (!modal) return;
+    if (e.target.id === 'congratsModal' || e.target.classList.contains('congrats-close')) {
+      closeCongratsModal();
+    }
+  });
+
+  // Handle escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      // Close mobile add modal if open
+      const modal = document.getElementById('mobileAddHabitModal');
+      if (modal.style.display === 'flex') {
+        closeMobileAddModal();
+      }
+      
+      // Close month panel if open on mobile
+      if (isMobileView) {
+        const panel = document.getElementById('monthPanel');
+        if (panel.classList.contains('open-mobile')) {
+          toggleMonthPanelMobile();
+        }
+      }
+
+      // Close congrats modal if open
+      const congrats = document.getElementById('congratsModal');
+      if (congrats && congrats.classList.contains('open')) {
+        closeCongratsModal();
+      }
+    }
+  });
+</script>
+</body>
+</html>

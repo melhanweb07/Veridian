@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Monthly Habit Tracker</title>
+  <title>Veridian Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -770,30 +770,40 @@
       display: none;
     }
 
-    .mobile-bottom-bar .nav-btn { width: 42px; height: 42px; }
-
-    /* Habit toggle button for mobile day list */
-    .habit-toggle {
-      background: white;
-      border: 2px solid #e9ecef;
-      border-radius: 10px;
-      padding: 10px;
+    .mobile-bottom-bar .nav-btn { 
+      width: 42px; 
+      height: 42px; 
+      background: #f8f9fa;
+      border: none;
+      border-radius: 50%;
       display: flex;
-      gap: 10px;
       align-items: center;
-      width: 100%;
-      text-align: left;
-      font-size: 15px;
+      justify-content: center;
+      color: #3a7bd5;
+      font-size: 16px;
       cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .habit-toggle[disabled] { opacity: 0.6; cursor: not-allowed; }
+    .mobile-bottom-bar .nav-btn:hover {
+      background: rgba(58, 123, 213, 0.1);
+      transform: scale(1.1);
+    }
 
-    .habit-toggle .habit-status { width: 26px; height: 26px; border-radius: 8px; border-width: 3px; }
-
-    .habit-toggle .habit-status.completed { background: #28a745; border-color: #28a745; color: white; }
-
-    .habit-toggle .habit-name-short { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mobile-bottom-bar .add-fab {
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      color: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+      cursor: pointer;
+      font-size: 18px;
+    }
 
     /* Modal styles */
     .modal {
@@ -1046,7 +1056,7 @@
         font-size: 16px;
       }
 
-      /* Mobile calendar grid - horizontal scroll */
+      /* Mobile calendar grid - vertical list */
       .calendar-grid {
         display: flex;
         flex-direction: column;
@@ -1151,6 +1161,10 @@
         bottom: 16px;
         padding: 12px;
         justify-content: space-around;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
       }
 
       .mobile-legend {
@@ -1231,174 +1245,6 @@
         min-height: 80px;
       }
     }
-
-    /* Congratulation modal styles */
-    #congratsModal {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 4000;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-      opacity: 0;
-    }
-
-    #congratsModal.open {
-      pointer-events: auto;
-      opacity: 1;
-    }
-
-    #congratsModal .congrats-card {
-      /* Laminated / beveled glass look */
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
-        linear-gradient(135deg, rgba(58,123,213,0.04), rgba(0,210,255,0.02));
-      border-radius: 18px;
-      padding: 28px 30px;
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow:
-        0 8px 20px rgba(2,6,23,0.45),
-        inset 0 1px 0 rgba(255,255,255,0.04),
-        inset 0 -8px 24px rgba(2,6,23,0.06);
-      text-align: center;
-      width: min(420px, 92%);
-      transform: translateY(-30px) scale(0.92);
-      opacity: 0;
-      transition: transform 520ms cubic-bezier(.2,.9,.3,1), opacity 300ms ease, box-shadow 300ms ease;
-      position: relative;
-      overflow: visible;
-      color: #f8fbff;
-      -webkit-backdrop-filter: blur(8px) saturate(120%);
-      backdrop-filter: blur(8px) saturate(120%);
-    }
-
-    /* Decorative thin rim to emphasize laminate */
-    #congratsModal .congrats-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(0,0,0,0.06));
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      pointer-events: none;
-    }
-
-    /* Shine sweep (uses ::after) */
-    #congratsModal .congrats-card::after {
-      content: "";
-      position: absolute;
-      top: -20%;
-      left: -60%;
-      width: 40%;
-      height: 140%;
-      background: linear-gradient(90deg, rgba(255,255,255,0.00), rgba(255,255,255,0.65), rgba(255,255,255,0.00));
-      transform: rotate(18deg) translateX(-120%);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* Triggered class to animate the shine */
-    #congratsModal .congrats-card.shine-animate::after {
-      animation: shineSweep 900ms cubic-bezier(.25,.9,.2,1) forwards;
-    }
-
-    #congratsModal.open .congrats-card {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-      animation: popIn 560ms cubic-bezier(.2,.9,.3,1) both;
-      box-shadow: 0 18px 36px rgba(2,6,23,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
-    }
-
-    @keyframes popIn {
-      0% { transform: translateY(-30px) scale(0.92); opacity: 0; }
-      60% { transform: translateY(6px) scale(1.02); }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    @keyframes shineSweep {
-      0% { transform: rotate(18deg) translateX(-120%); opacity: 0; }
-      20% { opacity: 0.6; }
-      100% { transform: rotate(18deg) translateX(140%); opacity: 0; }
-    }
-
-    .congrats-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #ffffff;
-      text-shadow: 0 1px 0 rgba(0,0,0,0.35);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .congrats-message {
-      font-size: 16px;
-      color: rgba(255,255,255,0.92);
-      margin-bottom: 12px;
-      line-height: 1.3;
-    }
-
-    .congrats-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .congrats-button {
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-weight: 700;
-      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(58,123,213,0.18);
-    }
-
-    .congrats-close {
-      background: #f8f9fa;
-      color: #333;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* Confetti pieces */
-    #congratsModal .confetti {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      border-radius: 16px;
-    }
-
-    .confetti-piece {
-      position: absolute;
-      top: -10%;
-      width: 10px;
-      height: 14px;
-      border-radius: 2px;
-      animation: confettiFall 1.8s linear forwards;
-      opacity: 0.95;
-      transform-origin: center;
-    }
-
-    @keyframes confettiFall {
-      to { transform: translateY(110vh) rotate(360deg); opacity: 1; }
-    }
-
   </style>
 </head>
 <body>
@@ -1406,15 +1252,15 @@
 <div class="container">
   <div class="header">
     <div style="display:flex; align-items:center; justify-content:center; gap:15px; position:relative;">
-      <button id="mobileMonthsToggle" class="year-btn mobile-only" onclick="toggleMonthPanelMobile()" title="Months" aria-label="Open months panel" style="position:absolute; left:10px; top:50%; transform:translateY(-50%);">
+      <button id="mobileMonthsToggle" class="year-btn mobile-only" title="Months" aria-label="Open months panel" style="position:absolute; left:10px; top:50%; transform:translateY(-50%);">
         <i class="fas fa-bars"></i>
       </button>
-      <h1><i class="fas fa-calendar-check"></i> Habit Tracker</h1>
-      <button id="mobileAddBtn" class="add-fab mobile-only" onclick="openMobileAddModal()" title="Add Habit" aria-label="Add new habit" style="position:absolute; right:10px; top:50%; transform:translateY(-50%);">
+      <h1><i class="fas fa-calendar-check"></i> Veridian Tracker</h1>
+      <button id="mobileAddBtn" class="add-fab mobile-only" title="Add Habit" aria-label="Add new habit" style="position:absolute; right:10px; top:50%; transform:translateY(-50%);">
         <i class="fas fa-plus"></i>
       </button>
     </div>
-    <p>Track your daily practices and habits for the entire month</p>
+    <p>Build better habits, one day at a time</p>
   </div>
 
   <div class="main-content">
@@ -1440,21 +1286,21 @@
     <!-- Habit Panel -->
     <div class="habit-panel">
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('habits')" id="habitsTabBtn">
-          <i class="fas fa-list-check"></i> My Habits
+        <button class="tab-btn active" onclick="switchTab('add-habit')" id="addHabitTabBtn">
+          <i class="fas fa-plus-circle"></i> Add Habit
         </button>
-        <button class="tab-btn" onclick="switchTab('add-habit')" id="addHabitTabBtn">
-          <i class="fas fa-plus-circle"></i> Add New Habit
+        <button class="tab-btn" onclick="switchTab('habits')" id="habitsTabBtn">
+          <i class="fas fa-list-check"></i> My Habits
         </button>
       </div>
       
       <!-- Add Habit Tab -->
       <div id="add-habit-tab" class="tab-content active">
         <div class="habit-input-section">
-          <h3>Add a New Monthly Habit</h3>
+          <h3>Add a New Habit</h3>
           
           <div class="input-group">
-            <input type="text" id="habitInput" placeholder="e.g., Practice guitar, Read 30 minutes, Morning meditation...">
+            <input type="text" id="habitInput" placeholder="e.g., Morning meditation, Read 30 minutes...">
           </div>
           
           <div class="frequency-selector">
@@ -1470,12 +1316,12 @@
           </div>
           
           <button class="add-habit-btn" onclick="addHabit()" id="addHabitBtn">
-            <i class="fas fa-plus"></i> Add Habit for Entire Month
+            <i class="fas fa-plus"></i> Add Habit
           </button>
         </div>
         
         <div class="habits-list">
-          <h3><i class="fas fa-list-check"></i> Current Month's Habits</h3>
+          <h3><i class="fas fa-list-check"></i> Current Habits</h3>
           <div id="habitsList">
             <!-- Habits will be loaded here -->
           </div>
@@ -1485,7 +1331,7 @@
       <!-- My Habits Tab -->
       <div id="habits-tab" class="tab-content">
         <div class="habits-list">
-          <h3><i class="fas fa-trophy"></i> Habit Progress</h3>
+          <h3><i class="fas fa-trophy"></i> All Habits</h3>
           <div id="allHabitsList">
             <!-- All habits will be loaded here -->
           </div>
@@ -1530,11 +1376,11 @@
         <div class="stat-card stat-4">
           <div class="stat-icon"><i class="fas fa-star"></i></div>
           <div class="stat-value" id="bestDay">0</div>
-          <div class="stat-label">Best Day (tasks)</div>
+          <div class="stat-label">Best Day</div>
         </div>
       </div>
 
-      <!-- Mobile legend and bottom bar -->
+      <!-- Mobile legend -->
       <div class="mobile-legend">
         <span class="legend-dot"></span>Uncompleted past days
       </div>
@@ -1543,35 +1389,35 @@
 </div>
 
 <!-- Month panel backdrop -->
-<div class="month-panel-backdrop" id="monthPanelBackdrop" onclick="toggleMonthPanelMobile()"></div>
+<div class="month-panel-backdrop" id="monthPanelBackdrop"></div>
 
 <!-- Mobile bottom navigation -->
-<div class="mobile-bottom-bar" role="toolbar">
-  <button class="nav-btn" onclick="goToToday()" title="Go to Today" aria-label="Go to today">
+<div class="mobile-bottom-bar" role="toolbar" aria-label="Quick actions">
+  <button class="nav-btn" id="mobileTodayBtn" title="Go to Today" aria-label="Go to today">
     <i class="fas fa-crosshairs"></i>
   </button>
-  <button class="add-fab" onclick="openMobileAddModal()" title="Add Habit" aria-label="Add new habit">
+  <button class="add-fab" id="mobileAddFab" title="Add Habit" aria-label="Add new habit">
     <i class="fas fa-plus"></i>
   </button>
-  <button class="nav-btn" onclick="toggleMonthPanelMobile()" title="Months" aria-label="Open months panel">
+  <button class="nav-btn" id="mobileMonthsNavBtn" title="Months" aria-label="Open months panel">
     <i class="fas fa-calendar"></i>
   </button>
 </div>
 
 <!-- Mobile Add Habit Modal -->
 <div id="mobileAddHabitModal" class="modal" aria-hidden="true">
-  <div class="modal-backdrop" onclick="closeMobileAddModal()"></div>
+  <div class="modal-backdrop"></div>
   <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="mobileAddTitle">
     <h3 id="mobileAddTitle">Add Habit</h3>
     <input type="text" id="mobileHabitInput" placeholder="e.g., Read 30 minutes" autocomplete="off" />
     <div class="frequency-selector" style="margin-bottom: 15px;">
-      <button class="frequency-btn active" data-frequency="daily" onclick="selectModalFrequency(this)">
+      <button class="frequency-btn active" data-frequency="daily">
         <i class="fas fa-calendar-day"></i> Daily
       </button>
-      <button class="frequency-btn" data-frequency="weekdays" onclick="selectModalFrequency(this)">
+      <button class="frequency-btn" data-frequency="weekdays">
         <i class="fas fa-briefcase"></i> Weekdays
       </button>
-      <button class="frequency-btn" data-frequency="weekends" onclick="selectModalFrequency(this)">
+      <button class="frequency-btn" data-frequency="weekends">
         <i class="fas fa-umbrella-beach"></i> Weekends
       </button>
     </div>
@@ -1582,19 +1428,6 @@
       <button class="habit-action-btn" onclick="closeMobileAddModal()" style="background:#f8f9fa; color:#495057;">
         Cancel
       </button>
-    </div>
-  </div>
-</div>
-
-<!-- Congratulation Modal -->
-<div id="congratsModal" aria-hidden="true">
-  <div class="congrats-card" role="dialog" aria-modal="true" aria-labelledby="congratsTitle">
-    <div class="confetti" aria-hidden="true"></div>
-    <div class="congrats-title" id="congratsTitle">🎉 <span>Congratulations</span></div>
-    <div class="congrats-message">Nice! You completed the habit.</div>
-    <div class="congrats-actions">
-      <button class="congrats-button" onclick="closeCongratsModal()">Awesome</button>
-      <button class="congrats-close" onclick="closeCongratsModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1653,24 +1486,66 @@
       }
     });
     
-    // Close month panel when clicking outside on mobile
-    document.addEventListener('click', function(e) {
-      const monthPanel = document.getElementById('monthPanel');
-      const backdrop = document.getElementById('monthPanelBackdrop');
-      const toggleBtn = document.getElementById('mobileMonthsToggle');
-      
-      if (isMobileView && monthPanel.classList.contains('open-mobile') && 
-          !monthPanel.contains(e.target) && e.target !== toggleBtn) {
-        toggleMonthPanelMobile();
-      }
-    });
+    // Initialize mobile navigation buttons
+    initializeMobileNavigation();
     
     // Handle window resize
     window.addEventListener('resize', handleResize);
     
     // Initialize mobile state
     checkMobileView();
+    
+    // Close month panel when clicking backdrop
+    document.getElementById('monthPanelBackdrop').addEventListener('click', toggleMonthPanelMobile);
+    
+    // Handle escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        // Close mobile add modal if open
+        const modal = document.getElementById('mobileAddHabitModal');
+        if (modal.style.display === 'flex') {
+          closeMobileAddModal();
+        }
+        
+        // Close month panel if open on mobile
+        if (isMobileView) {
+          const panel = document.getElementById('monthPanel');
+          if (panel.classList.contains('open-mobile')) {
+            toggleMonthPanelMobile();
+          }
+        }
+      }
+    });
   });
+
+  // Initialize mobile navigation buttons
+  function initializeMobileNavigation() {
+    // Go to Today button
+    document.getElementById('mobileTodayBtn').addEventListener('click', goToToday);
+    
+    // Add Habit button
+    document.getElementById('mobileAddFab').addEventListener('click', openMobileAddModal);
+    
+    // Months panel button
+    document.getElementById('mobileMonthsNavBtn').addEventListener('click', toggleMonthPanelMobile);
+    
+    // Header months toggle button
+    document.getElementById('mobileMonthsToggle').addEventListener('click', toggleMonthPanelMobile);
+    
+    // Header add button
+    document.getElementById('mobileAddBtn').addEventListener('click', openMobileAddModal);
+    
+    // Set up mobile modal frequency buttons
+    document.querySelectorAll('#mobileAddHabitModal .frequency-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#mobileAddHabitModal .frequency-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    
+    // Set up modal backdrop
+    document.querySelector('#mobileAddHabitModal .modal-backdrop').addEventListener('click', closeMobileAddModal);
+  }
 
   // Handle window resize
   function handleResize() {
@@ -1796,7 +1671,7 @@
     const habitText = habitInput.value.trim();
     
     if (habitText === "") {
-      alert("Please enter a habit!");
+      showNotification("Please enter a habit!");
       return;
     }
     
@@ -1811,7 +1686,7 @@
     // Check if habit already exists for this month
     const existingHabit = habits[monthKey].find(h => h.text.toLowerCase() === habitText.toLowerCase());
     if (existingHabit) {
-      alert("This habit already exists for this month!");
+      showNotification("This habit already exists for this month!");
       return;
     }
     
@@ -1821,7 +1696,7 @@
       text: habitText,
       frequency: selectedFrequency,
       createdAt: new Date().toISOString(),
-      completedDays: [] // Array to store which days this habit was completed
+      completedDays: []
     };
     
     habits[monthKey].push(newHabit);
@@ -1842,7 +1717,7 @@
     switchTab('habits');
     
     // Show success message
-    showNotification(`"${habitText}" added as a ${selectedFrequency} habit for ${monthNames[currentMonth]}`);
+    showNotification(`"${habitText}" added as a ${selectedFrequency} habit`);
   }
 
   // Get habits for a specific month
@@ -2030,9 +1905,6 @@
     } else {
       // Add to completions
       dailyCompletions[dayKey].push(habitId);
-      // Show congrats modal for completion
-      const completedHabit = getHabitById(habitId);
-      showCongratsModal(completedHabit ? completedHabit.text : "Habit");
     }
     
     // Save to localStorage
@@ -2449,28 +2321,20 @@
     document.getElementById("bestDay").textContent = bestDayCount;
   }
 
-  // Mobile: Toggle month panel visibility on small screens (slide-in drawer)
+  // Mobile: Toggle month panel visibility
   function toggleMonthPanelMobile() {
     const panel = document.getElementById('monthPanel');
     const backdrop = document.getElementById('monthPanelBackdrop');
-    const toggleBtn = document.getElementById('mobileMonthsToggle');
     const isOpen = panel.classList.contains('open-mobile');
     
     if (isOpen) {
       panel.classList.remove('open-mobile');
       backdrop.classList.remove('open');
-      toggleBtn.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = 'auto';
     } else {
       panel.classList.add('open-mobile');
       backdrop.classList.add('open');
-      toggleBtn.setAttribute('aria-expanded', 'true');
       document.body.style.overflow = 'hidden';
-      // Focus the first month button for accessibility
-      setTimeout(() => {
-        const firstMonthBtn = panel.querySelector('.month-btn');
-        if (firstMonthBtn) firstMonthBtn.focus();
-      }, 300);
     }
   }
 
@@ -2478,7 +2342,6 @@
   function openMobileAddModal() {
     const modal = document.getElementById('mobileAddHabitModal');
     modal.style.display = 'flex';
-    modal.setAttribute('aria-hidden', 'false');
     
     // Reset frequency to daily
     document.querySelectorAll('#mobileAddHabitModal .frequency-btn').forEach(btn => {
@@ -2502,23 +2365,17 @@
   function closeMobileAddModal() {
     const modal = document.getElementById('mobileAddHabitModal');
     modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = 'auto';
-  }
-
-  function selectModalFrequency(btn) {
-    document.querySelectorAll('#mobileAddHabitModal .frequency-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
   }
 
   function addHabitFromModal() {
     const val = document.getElementById('mobileHabitInput').value.trim();
     if (!val) { 
-      alert('Please enter a habit'); 
+      showNotification('Please enter a habit'); 
       return; 
     }
     
-    // Set frequency
+    // Set frequency from modal
     const freqBtn = document.querySelector('#mobileAddHabitModal .frequency-btn.active');
     if (freqBtn) {
       const freq = freqBtn.getAttribute('data-frequency');
@@ -2612,96 +2469,6 @@
       }, 400);
     }, 3000);
   }
-
-  // Get habit by id (search across months)
-  function getHabitById(habitId) {
-    for (const monthKey in habits) {
-      const found = habits[monthKey].find(h => h.id === habitId);
-      if (found) return found;
-    }
-    return null;
-  }
-
-  // Congratulation modal logic
-  function showCongratsModal(habitText) {
-    const modal = document.getElementById('congratsModal');
-    if (!modal) return;
-    modal.setAttribute('aria-hidden', 'false');
-    const msg = modal.querySelector('.congrats-message');
-    msg.textContent = `Nice! You completed "${habitText}" 🎉`;
-    modal.classList.add('open');
-    // Laminated card shine: trigger sweep animation
-    const card = modal.querySelector('.congrats-card');
-    if (card) {
-      card.classList.remove('shine-animate');
-      // Force reflow to restart animation
-      void card.offsetWidth;
-      card.classList.add('shine-animate');
-      setTimeout(() => card.classList.remove('shine-animate'), 1400);
-    }
-    createConfetti();
-    clearTimeout(modal.dismissTimer);
-    modal.dismissTimer = setTimeout(closeCongratsModal, 4000);
-  }
-
-  function closeCongratsModal() {
-    const modal = document.getElementById('congratsModal');
-    if (!modal) return;
-    modal.setAttribute('aria-hidden', 'true');
-    modal.classList.remove('open');
-    const confetti = modal.querySelector('.confetti');
-    if (confetti) confetti.innerHTML = '';
-  }
-
-  function createConfetti() {
-    const confetti = document.querySelector('#congratsModal .confetti');
-    if (!confetti) return;
-    confetti.innerHTML = '';
-    const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#9B5DE5'];
-    for (let i = 0; i < 18; i++) {
-      const el = document.createElement('span');
-      el.className = 'confetti-piece';
-      el.style.left = Math.random() * 100 + '%';
-      el.style.background = colors[Math.floor(Math.random() * colors.length)];
-      el.style.animationDelay = (Math.random() * 0.6) + 's';
-      confetti.appendChild(el);
-    }
-    setTimeout(() => { confetti.innerHTML = ''; }, 3800);
-  }
-
-  // Close modal when clicking outside or pressing the close button
-  document.addEventListener('click', function(e) {
-    const modal = document.getElementById('congratsModal');
-    if (!modal) return;
-    if (e.target.id === 'congratsModal' || e.target.classList.contains('congrats-close')) {
-      closeCongratsModal();
-    }
-  });
-
-  // Handle escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      // Close mobile add modal if open
-      const modal = document.getElementById('mobileAddHabitModal');
-      if (modal.style.display === 'flex') {
-        closeMobileAddModal();
-      }
-      
-      // Close month panel if open on mobile
-      if (isMobileView) {
-        const panel = document.getElementById('monthPanel');
-        if (panel.classList.contains('open-mobile')) {
-          toggleMonthPanelMobile();
-        }
-      }
-
-      // Close congrats modal if open
-      const congrats = document.getElementById('congratsModal');
-      if (congrats && congrats.classList.contains('open')) {
-        closeCongratsModal();
-      }
-    }
-  });
 </script>
 </body>
 </html>

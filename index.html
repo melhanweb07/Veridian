@@ -555,6 +555,123 @@
       color: #155724;
     }
 
+    .day-schedule-indicator {
+      background: #fff8e6;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      color: #6a4a00;
+    }
+
+    .day-schedule-indicator .schedule-text {
+      flex: 1;
+      margin-left: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .day-schedule-indicator.completed {
+      background: #e6fff0;
+      color: #116530;
+      border: 1px solid #c6f1d6;
+    }
+
+    .day-schedule-indicator.completed .schedule-text {
+      text-decoration: line-through;
+      opacity: 0.8;
+    }
+
+    .schedule-toggle-btn {
+      background: none;
+      border: none;
+      color: #2f8f4a;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 6px;
+    }
+
+    /* Schedule input styles */
+    .schedule-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    #scheduleInput {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      font-size: 15px;
+      outline: none;
+    }
+
+    #scheduleInput:focus {
+      border-color: #3a7bd5;
+      box-shadow: 0 0 0 4px rgba(58,123,213,0.08);
+    }
+
+    #scheduleDate {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      background: white;
+    }
+
+    .add-schedule-btn {
+      background: linear-gradient(to right, #ff9a9e, #fecf6a);
+      color: #4a2f00;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .schedule-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .schedule-item {
+      background: #fffdf7;
+      border: 1px solid #fff2d6;
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: #6a4a00;
+    }
+
+    .schedule-item.completed {
+      background: #eefcf0;
+      border-color: #d7f3dc;
+      color: #256032;
+    }
+
+    .schedule-item.completed .date,
+    .schedule-item.completed div[style*="font-weight:600"] {
+      text-decoration: line-through;
+      opacity: 0.9;
+    }
+
+    .schedule-item .date {
+      font-size: 12px;
+      color: #8a6b00;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+
     .habit-status {
       width: 14px;
       height: 14px;
@@ -1318,6 +1435,21 @@
           <button class="add-habit-btn" onclick="addHabit()" id="addHabitBtn">
             <i class="fas fa-plus"></i> Add Habit
           </button>
+          
+          <hr style="margin:16px 0; border:none; border-top:1px solid #e9ecef;">
+
+          <h3 style="margin-top:10px;">Add a One-time Schedule</h3>
+          <div class="schedule-row">
+            <input type="text" id="scheduleInput" placeholder="e.g., Cut hair, Cut nails...">
+            <input type="date" id="scheduleDate" style="width:170px;">
+            <button class="add-schedule-btn" onclick="addSchedule()" title="Add schedule"><i class="fas fa-calendar-plus"></i></button>
+          </div>
+
+          <div style="margin-top:6px; color:#6c757d; font-size:13px;">One-time schedules show on the selected date in the calendar.</div>
+
+          <div class="schedule-list" id="scheduledList">
+            <!-- Upcoming schedules for the selected month will be rendered here -->
+          </div>
         </div>
         
         <div class="habits-list">
@@ -1455,6 +1587,9 @@
   // Initialize daily completions storage
   let dailyCompletions = JSON.parse(localStorage.getItem("dailyHabitCompletions")) || {};
 
+  // Initialize scheduled tasks storage (one-off schedules for specific dates)
+  let scheduledTasks = JSON.parse(localStorage.getItem("scheduledTasks")) || {};
+
   // Initialize the app
   document.addEventListener("DOMContentLoaded", function() {
     updateYearDisplay();
@@ -1462,6 +1597,7 @@
     renderCalendar();
     loadHabitsForMonth();
     updateStats();
+    renderScheduledTasksForMonth();
     
     // Set up frequency selector
     document.querySelectorAll('.frequency-btn').forEach(btn => {
@@ -1598,6 +1734,7 @@
     loadHabitsForMonth();
     renderCalendar();
     updateStats();
+    renderScheduledTasksForMonth();
   }
 
   // Change month
@@ -1619,6 +1756,7 @@
     renderMonthsGrid();
     loadHabitsForMonth();
     updateStats();
+    renderScheduledTasksForMonth();
   }
 
   // Render months grid
@@ -1663,6 +1801,7 @@
     renderMonthsGrid();
     loadHabitsForMonth();
     updateStats();
+    renderScheduledTasksForMonth();
   }
 
   // Add a new habit
@@ -1724,6 +1863,105 @@
   function getHabitsForMonth(year, month) {
     const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
     return habits[monthKey] || [];
+  }
+
+  // Add a one-time schedule for a specific date
+  function addSchedule() {
+    const textInput = document.getElementById('scheduleInput');
+    const dateInput = document.getElementById('scheduleDate');
+    const text = textInput.value.trim();
+    const dateVal = dateInput.value;
+
+    if (!text || !dateVal) {
+      showNotification('Please enter both a date and a schedule description');
+      return;
+    }
+
+    // dateVal is in YYYY-MM-DD format; use directly as key
+    const key = dateVal;
+    if (!scheduledTasks[key]) scheduledTasks[key] = [];
+
+    const newTask = { id: Date.now(), text, done: false };
+    scheduledTasks[key].push(newTask);
+    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+
+    // Clear inputs and update UI
+    textInput.value = '';
+    dateInput.value = '';
+    renderCalendar();
+    renderScheduledTasksForMonth();
+    showNotification('Schedule added');
+  }
+
+  // Get scheduled tasks for a given day key (YYYY-MM-DD)
+  function getScheduledTasksForDay(dayKey) {
+    return scheduledTasks[dayKey] || [];
+  }
+
+  // Delete a scheduled task
+  function deleteScheduledTask(taskId, dayKey) {
+    if (!scheduledTasks[dayKey]) return;
+    scheduledTasks[dayKey] = scheduledTasks[dayKey].filter(t => t.id !== taskId);
+    if (scheduledTasks[dayKey].length === 0) delete scheduledTasks[dayKey];
+    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+    renderCalendar();
+    renderScheduledTasksForMonth();
+    showNotification('Schedule removed');
+  }
+
+  // Toggle schedule completion state
+  function toggleScheduleDone(taskId, dayKey) {
+    if (!scheduledTasks[dayKey]) return;
+    const item = scheduledTasks[dayKey].find(t => t.id === taskId);
+    if (!item) return;
+    item.done = !item.done;
+    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+    renderCalendar();
+    renderScheduledTasksForMonth();
+    showNotification(item.done ? 'Marked complete' : 'Marked incomplete');
+  }
+
+  // Render scheduled tasks for the currently selected month
+  function renderScheduledTasksForMonth() {
+    const container = document.getElementById('scheduledList');
+    container.innerHTML = '';
+
+    const monthKeyPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-`;
+    const items = [];
+
+    for (const dayKey in scheduledTasks) {
+      if (dayKey.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)) {
+        scheduledTasks[dayKey].forEach(s => {
+          items.push({ dayKey, ...s });
+        });
+      }
+    }
+
+    // Sort by date
+    items.sort((a, b) => a.dayKey.localeCompare(b.dayKey));
+
+    if (items.length === 0) {
+      container.innerHTML = `<div style="color:#6c757d; font-size:14px;">No schedules for ${monthNames[currentMonth]} ${currentYear}.</div>`;
+      return;
+    }
+
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'schedule-item' + (item.done ? ' completed' : '');
+      const dateLabel = item.dayKey;
+      const text = item.text;
+      el.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="schedule-toggle-btn" onclick="toggleScheduleDone(${item.id}, '${item.dayKey}')" title="${item.done ? 'Unmark' : 'Mark complete'}">${item.done ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}</button>
+          <div class="date">${dateLabel}</div>
+          <div style="font-weight:600;">${text}</div>
+        </div>
+        <div>
+          <button class="habit-action-btn" title="Delete" onclick="deleteScheduledTask(${item.id}, '${item.dayKey}')" style="background:none; border:none; color:#6a4a00;"><i class="fas fa-trash"></i></button>
+        </div>
+      `;
+      container.appendChild(el);
+    });
   }
 
   // Load habits for current month
@@ -2117,6 +2355,31 @@
 
         dayCell.appendChild(dayHabits);
       }
+
+      // Attach scheduled one-off tasks for this day
+      (function() {
+        let dayHabitsContainer = dayCell.querySelector('.day-habits');
+        if (!dayHabitsContainer) {
+          dayHabitsContainer = document.createElement('div');
+          dayHabitsContainer.className = 'day-habits';
+          dayCell.appendChild(dayHabitsContainer);
+        }
+
+        const schedules = getScheduledTasksForDay(dayKey);
+        schedules.forEach(s => {
+          const schedEl = document.createElement('div');
+          schedEl.className = 'day-schedule-indicator' + (s.done ? ' completed' : '');
+          const short = s.text.length > 20 ? s.text.substring(0, 20) + '...' : s.text;
+          schedEl.innerHTML = `
+            <button class="schedule-toggle-btn" onclick="toggleScheduleDone(${s.id}, '${dayKey}')" title="${s.done ? 'Unmark' : 'Mark complete'}">
+              ${s.done ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+            </button>
+            <div class="schedule-text">${short}</div>
+            <button class="habit-action-btn" onclick="deleteScheduledTask(${s.id}, '${dayKey}')" title="Delete schedule" style="background:none; border:none; color:#6a4a00;"><i class="fas fa-trash"></i></button>
+          `;
+          dayHabitsContainer.appendChild(schedEl);
+        });
+      })();
       
       calendarGrid.appendChild(dayCell);
     }
@@ -2233,6 +2496,31 @@
         dayHabits.appendChild(noHabitsIndicator);
         dayCell.appendChild(dayHabits);
       }
+
+      // Attach scheduled one-off tasks for this day (mobile)
+      (function() {
+        let dayHabitsContainer = dayCell.querySelector('.day-habits');
+        if (!dayHabitsContainer) {
+          dayHabitsContainer = document.createElement('div');
+          dayHabitsContainer.className = 'day-habits';
+          dayCell.appendChild(dayHabitsContainer);
+        }
+
+        const schedules = getScheduledTasksForDay(dayKey);
+        schedules.forEach(s => {
+          const schedEl = document.createElement('div');
+          schedEl.className = 'day-schedule-indicator' + (s.done ? ' completed' : '');
+          const short = s.text.length > 40 ? s.text.substring(0, 40) + '...' : s.text;
+          schedEl.innerHTML = `
+            <button class="schedule-toggle-btn" onclick="toggleScheduleDone(${s.id}, '${dayKey}')" title="${s.done ? 'Unmark' : 'Mark complete'}">
+              ${s.done ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+            </button>
+            <div class="schedule-text">${short}</div>
+            <button class="habit-action-btn" onclick="deleteScheduledTask(${s.id}, '${dayKey}')" title="Delete schedule" style="background:none; border:none; color:#6a4a00;"><i class="fas fa-trash"></i></button>
+          `;
+          dayHabitsContainer.appendChild(schedEl);
+        });
+      })();
       
       calendarGrid.appendChild(dayCell);
     }
@@ -2406,6 +2694,7 @@
     renderCalendar();
     loadHabitsForMonth();
     updateStats();
+    renderScheduledTasksForMonth();
     
     // Close month panel if open on mobile
     if (isMobileView) {
